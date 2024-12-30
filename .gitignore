@@ -1,0 +1,89 @@
+# Python bytecode
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+
+# Virtual environment
+env/
+venv/
+ENV/
+.venv/
+ENV.*
+
+# Django specific
+db.sqlite3
+*.sqlite3
+*.log
+*.pot
+*.py[co]
+*.log
+*.pot
+*.coverage
+.coverage.*
+*.spec
+*.seed
+*.swo
+*.swp
+*.orig
+*.bak
+*.retry
+
+# Media and static files
+/media/
+*.media/
+staticfiles/
+static/
+node_modules/
+
+# Environment variables
+.env
+.env.*
+
+# IDE specific
+.idea/
+.vscode/
+*.sublime*
+
+# MacOS specific
+.DS_Store
+
+# Testing related
+.pytest_cache/
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.egg-info/
+dist/
+
+# Build related
+*.egg
+*.egg-info/
+eggs/
+*.manifest
+*.spec
+pip-log.txt
+pip-delete-this-directory.txt
+htmlcov/
+build/
+dist/
+
+# Local settings
+local_settings.py
+
+# Migrations
+**/migrations/*.py
+!**/migrations/__init__.py
+
+# Celery beat schedules
+celerybeat-schedule
+celerybeat.pid
+
+# Deployment
+*.pem
+*.crt
+*.key
