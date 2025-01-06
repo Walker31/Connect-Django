@@ -23,7 +23,7 @@ def haversine(lat1, lon1, lat2, lon2):
 
 @csrf_exempt
 @api_view(['GET'])
-def find_profiles_within_radius(request, phone_no, radius_km=10):
+def find_profiles(request, phone_no, radius_km=10):
     """
     Finds profiles within the specified radius of the provided profile's location coordinates.
     Args:

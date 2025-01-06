@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
 from django.utils.timezone import now
-from django.contrib.postgres.fields import ArrayField
 
 class Profile(models.Model):
     id = models.AutoField(primary_key=True)
@@ -37,13 +36,12 @@ class Profile(models.Model):
         default="https://example.com/default-profile-picture.png",
         help_text="URL to the user's profile picture."
     )
-    pictures = ArrayField(
-        models.URLField(max_length=2048),
-        blank=True,
-        null=True,
-        size=10,
-        help_text="List of URLs for additional profile pictures."
-    )
+    pictures = models.JSONField(
+    blank=True,
+    null=True,
+    help_text="Store additional profile pictures as a JSON object, e.g., {'images': [url1, url2]}."
+)
+
 
     def save(self, *args, **kwargs):
         if not self.name and self.user:
