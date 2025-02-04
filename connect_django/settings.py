@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'daphne',
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
@@ -43,7 +44,9 @@ INSTALLED_APPS = [
     'post',
     'matches',
     'spotify',
-    'azureservice'
+    'azureservice',
+    'channels',
+    'chat'
 ]
 
 # Middleware
@@ -61,6 +64,8 @@ MIDDLEWARE = [
 # URLs and Templates
 ROOT_URLCONF = 'connect_django.urls'
 
+ASGI_APPLICATION = 'connect_django.asgi.application'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -77,11 +82,21 @@ TEMPLATES = [
     },
 ]
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
+
+
 WSGI_APPLICATION = 'connect_django.wsgi.application'
 
 # Database
 DATABASES = {
-    'postgres': {
+    'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'Connect',
         'USER': 'postgres',
@@ -89,7 +104,7 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '5432',
     },
-    'default': {
+    'azure': {
         'ENGINE': 'mssql',
         'NAME': 'Connect',
         'USER': 'Walker',
@@ -147,25 +162,21 @@ SECRET_KEY = env('SECRET_KEY')
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
-    "https://your-production-domain.com",
 ]
 
-# Logging (Optional)
 LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "file": {
-            "level": "DEBUG",
-            "class": "logging.FileHandler",
-            "filename": BASE_DIR / "debug.log",
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
         },
     },
-    "loggers": {
-        "django": {
-            "handlers": ["file"],
-            "level": "DEBUG",
-            "propagate": True,
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',  # You can change this to 'DEBUG' for more verbosity
         },
     },
 }
+

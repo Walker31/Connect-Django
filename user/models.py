@@ -1,12 +1,24 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
+from django.contrib.postgres.fields import ArrayField
 from django.utils.timezone import now
 
 class Profile(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     name = models.CharField(max_length=255, blank=True, null=True)
+    gender = models.CharField(max_length=10, blank=True, null=True)
+    like = ArrayField(
+        models.IntegerField(),
+        default=list,
+        blank=True,
+    )
+    dislike = ArrayField(
+        models.IntegerField(),
+        default=list,
+        blank=True,
+    )
     phone_no = models.CharField(
         max_length=10,
         unique=True,
@@ -37,11 +49,10 @@ class Profile(models.Model):
         help_text="URL to the user's profile picture."
     )
     pictures = models.JSONField(
-    blank=True,
-    null=True,
-    help_text="Store additional profile pictures as a JSON object, e.g., {'images': [url1, url2]}."
-)
-
+        blank=True,
+        null=True,
+        help_text="Store additional profile pictures as a JSON object, e.g., {'images': [url1, url2]}."
+    )
 
     def save(self, *args, **kwargs):
         if not self.name and self.user:
@@ -49,14 +60,14 @@ class Profile(models.Model):
         if self.phone_no and not self.phone_no.isdigit():
             raise ValueError("Phone number must contain only digits.")
         super().save(*args, **kwargs)
-
+    
     def set_location_coordinates(self, latitude, longitude):
         self.locationCoordinates = {"latitude": latitude, "longitude": longitude}
         self.save()
-
+    
     def __str__(self):
         return self.name if self.name else self.user.username
-
+    
     class Meta:
         db_table = 'profiles'
         managed = True
