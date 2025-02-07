@@ -9,17 +9,19 @@ class Message(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'Messages'
+        db_table = 'messages'
 
     def __str__(self):
         return f"from {self.sender} to {self.receiver} at {self.timestamp}"
 
 class ChatRoom(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    participants = models.ManyToManyField(User, related_name='chat_rooms')
+    participant1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='chatroom_participant1')
+    participant2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='chatroom_participant2')
 
     class Meta:
-        db_table = 'ChatRooms'
+        db_table = 'chatrooms'
+        unique_together = ('participant1', 'participant2')  # Ensure only one room per user pair
 
     def __str__(self):
-        return self.name
+        return f"Chat between {self.participant1.username} and {self.participant2.username}"
+

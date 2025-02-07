@@ -7,5 +7,5 @@ urlpatterns = [
     path('post/',include('post.urls')),
     path('azure/',include('azureservice.urls')),
     path('match/',include('matches.urls')),
-    path('chat/',include('chat.urls'))
+    path('chat/',include('messaging.urls'))
 ]

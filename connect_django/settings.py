@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'spotify',
     'azureservice',
     'channels',
-    'chat'
+    'messaging'
 ]
 
 # Middleware
@@ -160,9 +160,7 @@ SECRET_KEY = env('SECRET_KEY')
 
 
 # CORS Configuration
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8000",
-]
+CORS_ALLOW_ALL_ORIGINS = True
 
 LOGGING = {
     'version': 1,
