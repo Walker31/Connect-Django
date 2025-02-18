@@ -12,7 +12,7 @@ class ChatRoomListView(APIView):
         user_id = request.GET.get('user_id')
 
         if not user_id:
-            return JsonResponse({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'error': 'User ID is required','request' : request.data}, status=status.HTTP_400_BAD_REQUEST)
 
         # Fetch chat rooms where the user is either participant1 or participant2
         rooms = ChatRoom.objects.filter(Q(participant1_id=user_id) | Q(participant2_id=user_id))
@@ -21,11 +21,11 @@ class ChatRoomListView(APIView):
         return JsonResponse(serializer.data, safe=False)
 
     def post(self, request):
-        participant1_id = request.POST.get('participant1')
-        participant2_id = request.POST.get('participant2')
+        participant1_id = request.data.get('participant1')
+        participant2_id = request.data.get('participant2')
 
         if not participant1_id or not participant2_id:
-            return JsonResponse({'error': 'Both participants are required'}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'error': 'Both participants are required','request' : request.POST}, status=status.HTTP_400_BAD_REQUEST)
 
         participant1 = get_object_or_404(User, id=participant1_id)
         participant2 = get_object_or_404(User, id=participant2_id)
@@ -41,9 +41,9 @@ class ChatRoomListView(APIView):
 
 class SendMessageView(APIView):
     def post(self, request):
-        sender_id = request.POST.get('sender')
-        receiver_id = request.POST.get('receiver')
-        message = request.POST.get('content')
+        sender_id = request.data.get('sender')
+        receiver_id = request.data.get('receiver')
+        message = request.data.get('content')
 
         if not sender_id or not receiver_id or not message:
             return JsonResponse({'error': 'Missing required fields'}, status=status.HTTP_400_BAD_REQUEST)

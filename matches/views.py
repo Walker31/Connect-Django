@@ -4,7 +4,7 @@ import math
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from user.models import Profile
-from django.shortcuts import get_object_or_404
+import traceback
 
 def haversine(lat1, lon1, lat2, lon2):
     """
@@ -23,56 +23,63 @@ def haversine(lat1, lon1, lat2, lon2):
     return round(c * radius_of_earth_km,2)
 
 
+
 @api_view(['POST'])
 def updateList(request):
     try:
+        
         id = request.data.get('id')  # ID of the user performing the action
         other_id = request.data.get('other_id')  # Partner's ID
         action = request.data.get('action')  
 
-        if not id or not other_id or not action:
+        if id is None or other_id is None or not action:
             return JsonResponse({"status": "error", "message": "Missing required parameters"}, status=400)
+
         # Fetch both user profiles
         user_profile = Profile.objects.filter(id=id).first()
         partner_profile = Profile.objects.filter(id=other_id).first()
+
         if not user_profile or not partner_profile:
             return JsonResponse({"status": "error", "message": "Invalid user or partner ID"}, status=404)
 
         match = False  # Default match state
 
         if action == "like":
-            # Check if the current user's ID is already in the partner's like array
-            if id in partner_profile.like:
-                # It's a match!
+
+            # Check if the current user's ID is already in the partner's like list
+            if isinstance(partner_profile.like, list) and id in partner_profile.like:
                 match = True
             else:
-                # Add the partner's ID to the user's like array
-                if other_id not in user_profile.like:
+                if isinstance(user_profile.like, list) and other_id not in user_profile.like:
                     user_profile.like.append(other_id)
-                    user_profile.save()
+                    user_profile.save(update_fields=["like"])  # Only update the like field
 
-            return JsonResponse({
+            response = {
                 "status": "success",
                 "match": match,
                 "message": "Liked Profile successfully"
-            })
+            }
+            return JsonResponse(response, safe=False)
 
         elif action == "dislike":
-            # Add the partner's ID to the user's dislike array
-            if other_id not in user_profile.dislike:
+
+            if isinstance(user_profile.dislike, list) and other_id not in user_profile.dislike:
                 user_profile.dislike.append(other_id)
-                user_profile.save()
-            return JsonResponse({
+                user_profile.save(update_fields=["dislike"])  # Only update the dislike field
+
+            response = {
                 "status": "success",
                 "match": match,
                 "message": "Disliked Profile successfully"
-            })
+            }
+            return JsonResponse(response, safe=False)
 
         else:
             return JsonResponse({"status": "error", "message": "Invalid action"}, status=400)
 
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
 
 
 
