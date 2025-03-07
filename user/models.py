@@ -41,6 +41,11 @@ class Profile(models.Model):
         validators=[MinValueValidator(0), MaxValueValidator(120)],
         help_text="Age of the user."
     )
+    last_online = models.DateTimeField(
+        blank=True,
+        null = True,
+        help_text="Stores the timestamp of the user's last online activity."
+    )
     profile_picture = models.URLField(
         max_length=2048,
         blank=True,
@@ -64,6 +69,11 @@ class Profile(models.Model):
     def set_location_coordinates(self, latitude, longitude):
         self.locationCoordinates = {"latitude": latitude, "longitude": longitude}
         self.save()
+
+    def update_last_online(self):
+        """Update the last_online field with the current timestamp."""
+        self.last_online = now()
+        self.save(update_fields=["last_online"])
     
     def __str__(self):
         return self.name if self.name else self.user.username

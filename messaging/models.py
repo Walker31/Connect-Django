@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from user.models import Profile
 
 # Create your models here.
 class Message(models.Model):
@@ -15,8 +16,9 @@ class Message(models.Model):
         return f"from {self.sender} to {self.receiver} at {self.timestamp}"
 
 class ChatRoom(models.Model):
-    participant1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='chatroom_participant1')
-    participant2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name='chatroom_participant2')
+    participant1 = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='chatroom_participant1')
+    participant2 = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='chatroom_participant2')
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'chatrooms'

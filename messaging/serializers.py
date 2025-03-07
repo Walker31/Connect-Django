@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Message, ChatRoom
 from django.contrib.auth.models import User
+from user.models import Profile
 
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -9,8 +10,8 @@ class MessageSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ['id', 'username']
+        model = Profile
+        fields = ['id', 'name','profile_picture']
 
 class ChatRoomSerializer(serializers.ModelSerializer):
     participant1 = UserSerializer(read_only=True)

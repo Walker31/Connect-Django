@@ -75,7 +75,7 @@ def login_view(request):
 
         if authenticated_user:
             serializer = ProfileSerializer(profile)
-            return JsonResponse({"message": f"Login Successful! Welcome, {authenticated_user.first_name}.","profile":serializer.data},status=status.HTTP_200_OK)
+            return JsonResponse({"message": f"Login Successful! Welcome, {authenticated_user.first_name}.","token" : "login","phone_no" : f"{profile.phone_no}","profile":serializer.data},status=status.HTTP_200_OK)
         else:
             return JsonResponse({"error": "Wrong Credentials! Invalid phone number or password."},status=status.HTTP_401_UNAUTHORIZED)
     except Profile.DoesNotExist:

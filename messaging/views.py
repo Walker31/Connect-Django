@@ -6,6 +6,7 @@ from .models import ChatRoom, Message
 from .serializers import ChatRoomSerializer, MessageSerializer
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
+from user.models import Profile
 
 class ChatRoomListView(APIView):
     def get(self, request):
@@ -15,10 +16,10 @@ class ChatRoomListView(APIView):
             return JsonResponse({'error': 'User ID is required','request' : request.data}, status=status.HTTP_400_BAD_REQUEST)
 
         # Fetch chat rooms where the user is either participant1 or participant2
-        rooms = ChatRoom.objects.filter(Q(participant1_id=user_id) | Q(participant2_id=user_id))
+        rooms = ChatRoom.objects.filter(participant1_id=user_id)
         serializer = ChatRoomSerializer(rooms, many=True)
-
-        return JsonResponse(serializer.data, safe=False)
+    
+        return JsonResponse(serializer.data,safe=False)
 
     def post(self, request):
         participant1_id = request.data.get('participant1')
@@ -27,13 +28,13 @@ class ChatRoomListView(APIView):
         if not participant1_id or not participant2_id:
             return JsonResponse({'error': 'Both participants are required','request' : request.POST}, status=status.HTTP_400_BAD_REQUEST)
 
-        participant1 = get_object_or_404(User, id=participant1_id)
-        participant2 = get_object_or_404(User, id=participant2_id)
+        participant1 = get_object_or_404(Profile, id=participant1_id)
+        participant2 = get_object_or_404(Profile, id=participant2_id)
 
         # Ensure consistent ordering of participants
         room, created = ChatRoom.objects.get_or_create(
-            participant1=min(participant1, participant2, key=lambda x: x.id),
-            participant2=max(participant1, participant2, key=lambda x: x.id)
+            participant1=participant1,
+            participant2=participant2
         )
 
         serializer = ChatRoomSerializer(room)

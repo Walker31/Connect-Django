@@ -22,14 +22,12 @@ def haversine(lat1, lon1, lat2, lon2):
     radius_of_earth_km = 6371  # Radius of Earth in kilometers
     return round(c * radius_of_earth_km,2)
 
-
-
 @api_view(['POST'])
 def updateList(request):
     try:
-        
-        id = request.data.get('id')  # ID of the user performing the action
-        other_id = request.data.get('other_id')  # Partner's ID
+        print(request.data)
+        id = int(request.data.get('id'))  # ID of the user performing the action
+        other_id = int(request.data.get('other_id'))  # Partner's ID
         action = request.data.get('action')  
 
         if id is None or other_id is None or not action:
@@ -45,9 +43,12 @@ def updateList(request):
         match = False  # Default match state
 
         if action == "like":
-
+            print("entered matching")
             # Check if the current user's ID is already in the partner's like list
+            print(isinstance(partner_profile.like, list))
+            print(id in partner_profile.like)
             if isinstance(partner_profile.like, list) and id in partner_profile.like:
+                print("entered matching")
                 match = True
             else:
                 if isinstance(user_profile.like, list) and other_id not in user_profile.like:
