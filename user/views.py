@@ -13,18 +13,26 @@ from .serializer import ProfileSerializer
 @csrf_exempt
 @api_view(['POST'])
 def signup(request):
-    name = request.data.get('username')
+    # Extracting fields correctly
+    name = request.data.get('name')  # FIX: Changed from 'username' to 'name'
     password = request.data.get('password')
     gender = request.data.get('gender')
     phone_no = request.data.get('phone_no')
+    interests = request.data.get('interests')
     age = request.data.get('age')
-    location = request.data.get('location')
     latitude = request.data.get('latitude')
     longitude = request.data.get('longitude')
 
-    # Ensure all required fields are present
-    if not all([name, password, phone_no, age, location, latitude, longitude]):
-        return JsonResponse({"error": "All fields, including location coordinates, are required."}, status=status.HTTP_400_BAD_REQUEST)
+    print("Received Data:", request.data)
+
+    # Check for missing fields and list them
+    missing_fields = [field for field in ["name", "password", "phone_no", "age", "latitude", "longitude"] if not request.data.get(field)]
+    
+    if missing_fields:
+        return JsonResponse(
+            {"error": f"Missing required fields: {', '.join(missing_fields)}"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     # Check if phone number already exists
     if Profile.objects.filter(phone_no=phone_no).exists():
@@ -38,21 +46,25 @@ def signup(request):
         user = User.objects.create_user(username=username, password=password, first_name=name)
 
         # Create profile with location coordinates
+        location = "TDA"
         location_coordinates = {"latitude": float(latitude), "longitude": float(longitude)}
         profile = Profile(
             user=user, 
             phone_no=phone_no, 
             name=name, 
             age=age,
-            gender = gender,
+            gender=gender,
+            interests=interests,
             location=location, 
             locationCoordinates=location_coordinates
         )
         profile.save()
 
         return JsonResponse({"message": f"User Created Successfully. Welcome, {name}!"}, status=status.HTTP_201_CREATED)
+
     except Exception as e:
         return JsonResponse({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 
 @csrf_exempt
@@ -131,7 +143,7 @@ def bulk_signup(request):
         gender = user_data.get('gender')
         phone_no = user_data.get('phone_no')
         age = user_data.get('age')
-        location = user_data.get('location')
+        location = "TDA"
         latitude = user_data.get('latitude')
         longitude = user_data.get('longitude')
 

@@ -77,9 +77,6 @@ def updateList(request):
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
-
-
-
 @csrf_exempt
 @api_view(['GET'])
 def find_profiles(request, radius_km=5):

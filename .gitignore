@@ -10,7 +10,8 @@ env/
 venv/
 ENV/
 .venv/
-ENV.*
+ENV.*/
+connect/      # your custom venv folder
 
 # Django specific
 db.sqlite3
@@ -18,8 +19,6 @@ db.sqlite3
 *.log
 *.pot
 *.py[co]
-*.log
-*.pot
 *.coverage
 .coverage.*
 *.spec
@@ -52,13 +51,12 @@ node_modules/
 # Testing related
 .pytest_cache/
 .tox/
-.coverage
 .cache
 nosetests.xml
 coverage.xml
 *.cover
 *.egg-info/
-dist/
+htmlcov/
 
 # Build related
 *.egg
@@ -68,7 +66,6 @@ eggs/
 *.spec
 pip-log.txt
 pip-delete-this-directory.txt
-htmlcov/
 build/
 dist/
 
@@ -87,3 +84,6 @@ celerybeat.pid
 *.pem
 *.crt
 *.key
+
+# Vercel (if you deploy there)
+.vercel/

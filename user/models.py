@@ -14,6 +14,12 @@ class Profile(models.Model):
         default=list,
         blank=True,
     )
+    interests = ArrayField(
+        models.CharField(max_length=255),
+        default=list,
+        blank=True,
+        help_text="A list of user's interests stored as an array of strings."
+    )
     dislike = ArrayField(
         models.IntegerField(),
         default=list,
