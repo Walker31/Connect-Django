@@ -96,7 +96,7 @@ WSGI_APPLICATION = 'connect_django.wsgi.application'
 
 # Database
 DATABASES = {
-    'default': {
+    'postgre': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'Connect',
         'USER': 'postgres',
@@ -104,7 +104,7 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '5432',
     },
-    'azure': {
+    'default': {
         'ENGINE': 'mssql',
         'NAME': 'Connect',
         'USER': 'Walker',
