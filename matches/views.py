@@ -129,7 +129,8 @@ def find_profiles(request, radius_km=5):
                         "gender": profile.gender,
                         "phone_no": profile.phone_no,
                         "location": profile.location,
-                        "locationCoordinates": profile.locationCoordinates,
+                        "latitude":profile.latitude,
+                        "longitude":profile.longitude,
                         "age": profile.age, 
                         "distance":distance,
                     })

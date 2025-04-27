@@ -11,7 +11,7 @@ venv/
 ENV/
 .venv/
 ENV.*/
-connect/      # your custom venv folder
+connect/
 
 # Django specific
 db.sqlite3

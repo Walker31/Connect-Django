@@ -47,7 +47,6 @@ def signup(request):
 
         # Create profile with location coordinates
         location = "TDA"
-        location_coordinates = {"latitude": float(latitude), "longitude": float(longitude)}
         profile = Profile(
             user=user, 
             phone_no=phone_no, 
@@ -55,8 +54,9 @@ def signup(request):
             age=age,
             gender=gender,
             interests=interests,
-            location=location, 
-            locationCoordinates=location_coordinates
+            location=location,
+            latitude=latitude,
+            longitude=longitude
         )
         profile.save()
 
