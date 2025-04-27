@@ -1,6 +1,7 @@
 from pathlib import Path
 import environ
 import os
+import dj_database_url
 
 # Environment Variables Setup
 env = environ.Env(
@@ -96,15 +97,18 @@ WSGI_APPLICATION = 'connect_django.wsgi.application'
 
 # Database
 DATABASES = {
+    'default' : 
+        dj_database_url.config(default='postgresql://walker:kHoq4Gi8ulJVliKoZoeOmgCrmbqDhS7u@dpg-d06sumili9vc73en1j70-a.oregon-postgres.render.com/connect_n2h4')
+    ,
     'postgre': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Connect',
-        'USER': 'postgres',
+        'NAME': 'connect_n2h4',
+        'USER': 'walker',
         'PASSWORD': env("DB_PASSWORD"),
         'HOST': 'localhost',
         'PORT': '5432',
     },
-    'default': {
+    'azure': {
         'ENGINE': 'mssql',
         'NAME': 'Connect',
         'USER': 'Walker',
