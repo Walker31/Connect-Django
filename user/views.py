@@ -1,197 +1,105 @@
-from .models import Profile
-from django.contrib.auth.models import User
+from rest_framework.generics import GenericAPIView
+from rest_framework.response import Response
 from rest_framework import status
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate
-from rest_framework.decorators import api_view
-from django.utils.crypto import get_random_string
-from django.http import JsonResponse
-from rest_framework.decorators import api_view
-import json
+from .models import Profile
 from .serializer import ProfileSerializer
-
-@csrf_exempt
-@api_view(['POST'])
-def signup(request):
-    # Extracting fields correctly
-    name = request.data.get('name')  # FIX: Changed from 'username' to 'name'
-    password = request.data.get('password')
-    gender = request.data.get('gender')
-    phone_no = request.data.get('phone_no')
-    interests = request.data.get('interests')
-    age = request.data.get('age')
-    latitude = request.data.get('latitude')
-    longitude = request.data.get('longitude')
-
-    print("Received Data:", request.data)
-
-    # Check for missing fields and list them
-    missing_fields = [field for field in ["name", "password", "phone_no", "age", "latitude", "longitude"] if not request.data.get(field)]
-    
-    if missing_fields:
-        return JsonResponse(
-            {"error": f"Missing required fields: {', '.join(missing_fields)}"},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    # Check if phone number already exists
-    if Profile.objects.filter(phone_no=phone_no).exists():
-        return JsonResponse({"error": "Phone Number already registered."}, status=status.HTTP_400_BAD_REQUEST)
-
-    try:
-        # Generate a random username
-        username = get_random_string(length=8)
-
-        # Create user
-        user = User.objects.create_user(username=username, password=password, first_name=name)
-
-        # Create profile with location coordinates
-        location = "TDA"
-        profile = Profile(
-            user=user, 
-            phone_no=phone_no, 
-            name=name, 
-            age=age,
-            gender=gender,
-            interests=interests,
-            location=location,
-            latitude=latitude,
-            longitude=longitude
-        )
-        profile.save()
-
-        return JsonResponse({"message": f"User Created Successfully. Welcome, {name}!"}, status=status.HTTP_201_CREATED)
-
-    except Exception as e:
-        return JsonResponse({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+from .services import create_user_and_profile
+from django.contrib.auth.models import User
+from rest_framework.views import APIView
 
 
+class SignupView(GenericAPIView):
+    serializer_class = ProfileSerializer
 
-@csrf_exempt
-@api_view(['POST'])
-def login_view(request):
-    phone_no = request.data.get('phone_no')
-    password = request.data.get('password')
+    def post(self, request):
+        data = request.data
+        required = ["name", "password", "phone_no", "age", "latitude", "longitude"]
+        missing = [f for f in required if not data.get(f)]
 
-    # Validate input fields
-    if not phone_no or not password:
-        return JsonResponse({"error": "Phone number and password are required."},status=status.HTTP_400_BAD_REQUEST)
+        if missing:
+            return Response({"error": f"Missing fields: {', '.join(missing)}"}, status=400)
 
-    try:
-        # Fetch the Profile and User
-        profile = Profile.objects.get(phone_no=phone_no)
-        user = profile.user
-
-        # Authenticate the user
-        authenticated_user = authenticate(username=user.username, password=password)
-
-        if authenticated_user:
-            serializer = ProfileSerializer(profile)
-            return JsonResponse({"message": f"Login Successful! Welcome, {authenticated_user.first_name}.","token" : "login","phone_no" : f"{profile.phone_no}","profile":serializer.data},status=status.HTTP_200_OK)
-        else:
-            return JsonResponse({"error": "Wrong Credentials! Invalid phone number or password."},status=status.HTTP_401_UNAUTHORIZED)
-    except Profile.DoesNotExist:
-        return JsonResponse({"error": "Phone number does not exist."},status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return JsonResponse({"error": f"An error occurred: {str(e)}"},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-@csrf_exempt
-@api_view(['PUT'])
-def update_account(request):
-    try:
-        phone_no = request.data.get('phone_no')
-
-        if not phone_no:
-            return JsonResponse({"error": "Phone number is required."},status=status.HTTP_400_BAD_REQUEST)
-
-        # Fetch the profile by phone number
-        try:
-            profile = Profile.objects.get(phone_no=phone_no)
-        except Profile.DoesNotExist:
-            return JsonResponse({"error": "Phone number does not exist."},status=status.HTTP_404_NOT_FOUND)
-
-        # Update only provided fields
-        allowed_fields = ['name', 'age', 'location']
-        for field, value in request.data.items():
-            if field in allowed_fields:
-                setattr(profile, field, value)
-
-        # Save the updated profile
-        profile.save()
-
-        return JsonResponse({"message": "Account updated successfully."},status=status.HTTP_200_OK)
-
-    except json.JSONDecodeError:
-        return JsonResponse({"error": "Invalid JSON format."},status=status.HTTP_400_BAD_REQUEST)
-    except Exception as e:
-        return JsonResponse({"error": f"An error occurred: {str(e)}"},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-@csrf_exempt
-@api_view(['POST'])
-def bulk_signup(request):
-    users_data = request.data.get('users')
-
-    # Ensure the input is a list of users
-    if not isinstance(users_data, list) or not users_data:
-        return JsonResponse({"error": "A list of user data is required."}, status=status.HTTP_400_BAD_REQUEST)
-
-    results = []
-
-    for user_data in users_data:
-        username = user_data.get('username')
-        password = user_data.get('password')
-        gender = user_data.get('gender')
-        phone_no = user_data.get('phone_no')
-        age = user_data.get('age')
-        location = "TDA"
-        latitude = user_data.get('latitude')
-        longitude = user_data.get('longitude')
-
-        # Validate required fields
-        if not all([username, password, phone_no, age, location, latitude, longitude]):
-            results.append({
-                "phone_no": phone_no,
-                "status": "failed",
-                "error": "All fields, including location coordinates, are required."
-            })
-            continue
-
-        # Check if phone number already exists
-        if Profile.objects.filter(phone_no=phone_no).exists():
-            results.append({
-                "phone_no": phone_no,
-                "status": "failed",
-                "error": "Phone Number already registered."
-            })
-            continue
+        if Profile.objects.filter(phone_no=data["phone_no"]).exists():
+            return Response({"error": "Phone Number already registered."}, status=400)
 
         try:
-            # Create user
-            user = User.objects.create_user(username=username, password=password, first_name=username)
-
-            # Create profile with location coordinates
-            location_coordinates = {"latitude": float(latitude), "longitude": float(longitude)}
-            profile = Profile(
-                user=user,
-                phone_no=phone_no,
-                name=username,
-                age=age,
-                gender=gender,
-                location=location,
-                locationCoordinates=location_coordinates
-            )
-            profile.save()
-
-            results.append({
-                "phone_no": phone_no,
-                "status": "success",
-                "message": f"User Created Successfully. Welcome, {username}!"
-            })
+            user, profile = create_user_and_profile(data)
+            return Response({"message": f"User Created Successfully. Welcome, {user.first_name}!"}, status=201)
         except Exception as e:
-            results.append({
-                "phone_no": phone_no,
-                "status": "failed",
-                "error": f"An error occurred: {str(e)}"
-            })
+            return Response({"error": str(e)}, status=500)
 
-    return JsonResponse({"results": results}, status=status.HTTP_207_MULTI_STATUS)
+
+class LoginView(GenericAPIView):
+    serializer_class = ProfileSerializer
+
+    def post(self, request):
+        phone = request.data.get("phone_no")
+        pwd = request.data.get("password")
+        if not phone or not pwd:
+            return Response({"error": "Phone number and password required."}, status=400)
+
+        try:
+            profile = Profile.objects.get(phone_no=phone)
+            user = profile.user
+            if authenticate(username=user.username, password=pwd):
+                serialized = self.get_serializer(profile)
+                return Response({
+                    "message": f"Login Successful! Welcome, {user.first_name}.",
+                    "token": "login",
+                    "phone_no": phone,
+                    "profile": serialized.data
+                }, status=200)
+            return Response({"error": "Wrong credentials."}, status=401)
+        except Profile.DoesNotExist:
+            return Response({"error": "Phone number not found."}, status=404)
+
+
+class UpdateAccountView(GenericAPIView):
+    serializer_class = ProfileSerializer
+
+    def put(self, request):
+        phone = request.data.get("phone_no")
+        if not phone:
+            return Response({"error": "Phone number required."}, status=400)
+
+        try:
+            profile = Profile.objects.get(phone_no=phone)
+            for field in ["name", "age", "location"]:
+                if field in request.data:
+                    setattr(profile, field, request.data[field])
+            profile.save()
+            return Response({"message": "Account updated successfully."})
+        except Profile.DoesNotExist:
+            return Response({"error": "Profile not found."}, status=404)
+
+class BulkSignupView(APIView):
+    def post(self, request):
+        users = request.data  # ✅ request.data is already a list
+        created = []
+        errors = []
+
+        for u in users:
+            try:
+                user = User.objects.create_user(
+                    username=u["phone_no"],
+                    password=u["password"]
+                )
+                Profile.objects.create(
+                    user=user,
+                    name=u["username"],
+                    gender=u["gender"],
+                    phone_no=u["phone_no"],
+                    age=u["age"],
+                    latitude=u["latitude"],
+                    longitude=u["longitude"],
+                    interests=u.get("interests", [])
+                )
+                created.append(u["phone_no"])
+            except Exception as e:
+                errors.append({"user": u.get("phone_no"), "error": str(e)})
+
+        return Response(
+            {"created": created, "errors": errors},
+            status=status.HTTP_201_CREATED if not errors else status.HTTP_207_MULTI_STATUS
+        )

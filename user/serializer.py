@@ -4,7 +4,6 @@ from django.contrib.auth.models import User
 
 class ProfileSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    locationCoordinates = serializers.JSONField(required=False, default=dict)  # Default to empty dict if null
     profile_picture = serializers.URLField(required=False, default="https://example.com/default-profile-picture.png")  # Default URL if null
     pictures = serializers.JSONField(required=False, default=list)  # Default to empty list if null
     name = serializers.CharField(required=False, default=None)  # Default to None if null
@@ -17,7 +16,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = [
-            'id', 'user', 'name', 'gender', 'phone_no', 'location', 'locationCoordinates', 
+            'id', 'user', 'name', 'gender', 'phone_no', 'location', 
             'created_at', 'updated_at', 'about', 'age', 'profile_picture', 'pictures'
         ]
         read_only_fields = ['created_at', 'updated_at']

@@ -98,17 +98,9 @@ def find_profiles(request, radius_km=5):
 
         # Fetch the profile based on phone number
         current_profile = Profile.objects.get(phone_no=phone_no)
-        current_coords = current_profile.locationCoordinates
 
-        # Validate location coordinates
-        if not current_coords or 'latitude' not in current_coords or 'longitude' not in current_coords:
-            return JsonResponse(
-                {"error": "Current profile does not have valid latitude and longitude coordinates."}, 
-                status=400
-            )
-
-        current_lat = float(current_coords['latitude'])
-        current_lon = float(current_coords['longitude'])
+        current_lat = current_profile.latitude
+        current_lon = current_profile.longitude
         count = 0
         user = current_profile.user
         nearby_profiles = []
@@ -116,25 +108,25 @@ def find_profiles(request, radius_km=5):
         for profile in Profile.objects.exclude(id=current_profile.id):
             if current_profile.gender == profile.gender:
                 continue
-            coords = profile.locationCoordinates
-            if coords and 'latitude' in coords and 'longitude' in coords:
-                lat = float(coords['latitude'])
-                lon = float(coords['longitude'])
-                distance = haversine(current_lat, current_lon, lat, lon)
-                if distance <= radius_km:
-                    count +=1   
-                    nearby_profiles.append({
-                        "id": profile.id,
-                        "name": profile.name,
-                        "gender": profile.gender,
-                        "phone_no": profile.phone_no,
-                        "location": profile.location,
-                        "latitude":profile.latitude,
-                        "longitude":profile.longitude,
-                        "age": profile.age, 
-                        "distance":distance,
-                    })
-                    nearby_profiles.sort(key = lambda profile: profile["id"])
+            lat = profile.latitude
+            lon = profile.longitude
+            if lat is None or lon is None:
+                continue
+            distance = haversine(current_lat, current_lon, lat, lon)
+            if distance <= radius_km:
+                count +=1   
+                nearby_profiles.append({
+                    "id": profile.id,
+                    "name": profile.name,
+                    "gender": profile.gender,
+                    "phone_no": profile.phone_no,
+                    "location": profile.location,
+                    "latitude":profile.latitude,
+                    "longitude":profile.longitude,
+                    "age": profile.age, 
+                    "distance":distance,
+                })
+            nearby_profiles.sort(key = lambda profile: profile["id"])
 
         return JsonResponse({"nearby_profiles": nearby_profiles,"total_profile" : count}, status=200)
 

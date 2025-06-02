@@ -11,6 +11,7 @@ env = environ.Env(
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+APPEND_SLASH = False
 # Load .env file
 environ.Env.read_env(BASE_DIR / '.env')
 
@@ -97,14 +98,14 @@ WSGI_APPLICATION = 'connect_django.wsgi.application'
 
 # Database
 DATABASES = {
-    'default' : 
+    'render' : 
         dj_database_url.config(default='postgresql://walker:kHoq4Gi8ulJVliKoZoeOmgCrmbqDhS7u@dpg-d06sumili9vc73en1j70-a.oregon-postgres.render.com/connect_n2h4')
     ,
-    'postgre': {
+    'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'connect_n2h4',
-        'USER': 'walker',
-        'PASSWORD': env("DB_PASSWORD"),
+        'NAME': 'Connect',
+        'USER': 'postgres',
+        'PASSWORD': 'aditya',
         'HOST': 'localhost',
         'PORT': '5432',
     },
