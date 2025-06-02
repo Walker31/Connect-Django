@@ -112,13 +112,13 @@ DATABASES = {
     'default': {
         'ENGINE': 'mssql',
         'NAME': 'Connect',
-        'USER': 'Walker@connect2',
+        'USER': 'Walker',
         'PASSWORD': env("AZURE_DB_PASSWORD"),
         'HOST': 'connect2.database.windows.net',
         'PORT': '1433',
         'OPTIONS':{
             'driver': 'ODBC Driver 18 for SQL Server',
-            'extra_params': 'Encrypt=yes;TrustServerCertificate=no;'
+            'extra_params': 'Encrypt=yes;TrustServerCertificate=yes;'
         },
     },
 }
