@@ -101,7 +101,7 @@ DATABASES = {
     'render' : 
         dj_database_url.config(default='postgresql://walker:kHoq4Gi8ulJVliKoZoeOmgCrmbqDhS7u@dpg-d06sumili9vc73en1j70-a.oregon-postgres.render.com/connect_n2h4')
     ,
-    'default': {
+    'post': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'Connect',
         'USER': 'postgres',
@@ -109,15 +109,16 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '5432',
     },
-    'azure': {
+    'default': {
         'ENGINE': 'mssql',
         'NAME': 'Connect',
-        'USER': 'Walker',
+        'USER': 'Walker@connect2',
         'PASSWORD': env("AZURE_DB_PASSWORD"),
         'HOST': 'connect2.database.windows.net',
         'PORT': '1433',
         'OPTIONS':{
-            'driver': 'ODBC Driver 17 for SQL Server'
+            'driver': 'ODBC Driver 18 for SQL Server',
+            'extra_params': 'Encrypt=yes;TrustServerCertificate=no;'
         },
     },
 }
