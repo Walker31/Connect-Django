@@ -5,7 +5,7 @@ ENV PYTHONUNBUFFERED 1
 
 WORKDIR /app
 
-# Install system dependencies and add Microsoft key/repo the modern way
+# Install system dependencies and add Microsoft key/repo
 RUN apt-get update && \
     apt-get install -y gnupg curl apt-transport-https tzdata && \
     curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg && \
@@ -25,7 +25,10 @@ COPY requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-# Copy only necessary files
+# Copy project files
 COPY . .
 
 EXPOSE 8000
+
+# Use Gunicorn as the default command
+CMD ["gunicorn", "connect_django.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
