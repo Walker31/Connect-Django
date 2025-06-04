@@ -116,9 +116,11 @@ DATABASES = {
         'PASSWORD': env("AZURE_DB_PASSWORD"),
         'HOST': 'connect2.database.windows.net',
         'PORT': '1433',
-        'OPTIONS':{
+        'OPTIONS': {
             'driver': 'ODBC Driver 18 for SQL Server',
-            'extra_params': 'Encrypt=yes;TrustServerCertificate=yes;'
+            'encrypt': True,
+            'trust_server_certificate': False,
+            'connection_timeout': 30,
         },
     },
 }
