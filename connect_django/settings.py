@@ -1,34 +1,19 @@
 from pathlib import Path
 import environ
-import os
 import dj_database_url
 
-# Environment Variables Setup
+# Environment Setup
 env = environ.Env(
     DEBUG=(bool, False)
 )
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-APPEND_SLASH = False
-# Load .env file
 environ.Env.read_env(BASE_DIR / '.env')
 
-# Security
-DEBUG = env("DEBUG")
+# Basic Config
+DEBUG = env('DEBUG')
+SECRET_KEY = env('SECRET_KEY')
 ALLOWED_HOSTS = ['*']
-
-# Rest Framework Configuration
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-    ]   
-}
-
-# Media Configuration
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+APPEND_SLASH = False
 
 # Installed Apps
 INSTALLED_APPS = [
@@ -48,7 +33,7 @@ INSTALLED_APPS = [
     'spotify',
     'azureservice',
     'channels',
-    'messaging'
+    'messaging',
 ]
 
 # Middleware
@@ -63,11 +48,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# URLs and Templates
 ROOT_URLCONF = 'connect_django.urls'
-
 ASGI_APPLICATION = 'connect_django.asgi.application'
+WSGI_APPLICATION = 'connect_django.wsgi.application'
 
+# Templates
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -84,36 +69,22 @@ TEMPLATES = [
     },
 ]
 
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
-        },
-    },
-}
-
-
-WSGI_APPLICATION = 'connect_django.wsgi.application'
-
-# Database
+# Databases
 DATABASES = {
-    'render' : 
-        dj_database_url.config(default='postgresql://walker:kHoq4Gi8ulJVliKoZoeOmgCrmbqDhS7u@dpg-d06sumili9vc73en1j70-a.oregon-postgres.render.com/connect_n2h4')
-    ,
+    'render': dj_database_url.parse(env('RENDER_DATABASE_URL')),
     'post': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Connect',
-        'USER': 'postgres',
-        'PASSWORD': 'aditya',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': env('LOCAL_DB_NAME'),
+        'USER': env('LOCAL_DB_USER'),
+        'PASSWORD': env('LOCAL_DB_PASSWORD'),
+        'HOST': env('LOCAL_DB_HOST'),
+        'PORT': env('LOCAL_DB_PORT'),
     },
     'default': {
         'ENGINE': 'mssql',
         'NAME': 'Connect',
         'USER': 'Walker',
-        'PASSWORD': env("AZURE_DB_PASSWORD"),
+        'PASSWORD': env('AZURE_DB_PASSWORD'),
         'HOST': 'connect2.database.windows.net',
         'PORT': '1433',
         'OPTIONS': {
@@ -125,30 +96,27 @@ DATABASES = {
     },
 }
 
-# Password Validation
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+# Channel Layers
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
     },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
+}
 
-# Internationalization
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Asia/Kolkata'
-USE_I18N = True
-USE_TZ = True
+# REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
 
-# Static Files
+# Static & Media
 STATIC_URL = 'static/'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Azure Storage
@@ -165,27 +133,29 @@ STORAGES = {
     },
 }
 AZURE_CONTAINER = env("AZURE_CONTAINER")
-AZURE_CONNECTION_STRING = env('AZURE_CONNECTION_STRING')
+AZURE_CONNECTION_STRING = env("AZURE_CONNECTION_STRING")
 
-SECRET_KEY = env('SECRET_KEY')
-
-
-# CORS Configuration
+# CORS
 CORS_ALLOW_ALL_ORIGINS = True
 
+# Timezone and Language
+LANGUAGE_CODE = 'en-us'
+TIME_ZONE = 'Asia/Kolkata'
+USE_I18N = True
+USE_TZ = True
+
+# Password Validation
+AUTH_PASSWORD_VALIDATORS = [
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+]
+
+# Logging
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',  # You can change this to 'DEBUG' for more verbosity
-        },
-    },
+    'handlers': {'console': {'class': 'logging.StreamHandler'}},
+    'loggers': {'django': {'handlers': ['console'], 'level': 'INFO'}},
 }
-

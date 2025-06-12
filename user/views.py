@@ -78,9 +78,15 @@ class BulkSignupView(APIView):
         users = request.data  # ✅ request.data is already a list
         created = []
         errors = []
-
         for u in users:
+            if User.objects.filter(username=u["phone_no"]).exists():
+                errors.append({
+                    "user": u["phone_no"],
+                    "error": "Phone number already registered."
+                })
+                continue
             try:
+                
                 user = User.objects.create_user(
                     username=u["phone_no"],
                     password=u["password"]
