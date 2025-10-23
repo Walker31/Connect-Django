@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import timedelta
 import environ
 import dj_database_url
 
@@ -25,6 +26,7 @@ INSTALLED_APPS = [
     'daphne',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt',
     'corsheaders',
     'storages',
     'user',
@@ -71,8 +73,7 @@ TEMPLATES = [
 
 # Databases
 DATABASES = {
-    'render': dj_database_url.parse(env('RENDER_DATABASE_URL')),
-    'post': {
+    'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': env('LOCAL_DB_NAME'),
         'USER': env('LOCAL_DB_USER'),
@@ -80,19 +81,16 @@ DATABASES = {
         'HOST': env('LOCAL_DB_HOST'),
         'PORT': env('LOCAL_DB_PORT'),
     },
-    'default': {
-        'ENGINE': 'mssql',
+    'aws': {
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'Connect',
         'USER': 'Walker',
-        'PASSWORD': env('AZURE_DB_PASSWORD'),
-        'HOST': 'connect2.database.windows.net',
-        'PORT': '1433',
-        'OPTIONS': {
-            'driver': 'ODBC Driver 18 for SQL Server',
-            'encrypt': True,
-            'trust_server_certificate': False,
-            'connection_timeout': 30,
-        },
+        'PASSWORD': env('AWS_DB_PASSWORD'),
+        'HOST': '43.204.170.91',
+        'PORT': '5432',
+        'OPTIONS' :{
+            'sslmode' : 'require'
+        }
     },
 }
 
@@ -109,6 +107,7 @@ CHANNEL_LAYERS = {
 # REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ]
 }
@@ -119,21 +118,13 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Azure Storage
+GOOGLE_CLIENT_ID = "722853174837-v2deis0cugj96kkehvoegef7ldkqd3oo.apps.googleusercontent.com"
+
 STORAGES = {
-    "default": {
-        "BACKEND": "storages.backends.azure_storage.AzureStorage",
-        "OPTIONS": {
-            "account_name": env("AZURE_ACCOUNT_NAME"),
-            "account_key": env("AZURE_ACCOUNT_KEY"),
-        }
-    },
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
-AZURE_CONTAINER = env("AZURE_CONTAINER")
-AZURE_CONNECTION_STRING = env("AZURE_CONNECTION_STRING")
 
 # CORS
 CORS_ALLOW_ALL_ORIGINS = True
@@ -158,4 +149,11 @@ LOGGING = {
     'disable_existing_loggers': False,
     'handlers': {'console': {'class': 'logging.StreamHandler'}},
     'loggers': {'django': {'handlers': ['console'], 'level': 'INFO'}},
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=21),
+    'ROTATE_REFRESH_TOKEN': True,
+    'BLACKLIST_AFTER_ROTATION':True
 }

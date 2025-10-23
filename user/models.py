@@ -5,10 +5,13 @@ from django.contrib.postgres.fields import ArrayField
 from django.utils.timezone import now
 
 class Profile(models.Model):
-    id = models.AutoField(primary_key=True)
+    # No 'id' field needed, Django adds 'id = AutoField(primary_key=True)' by default
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     name = models.CharField(max_length=255, blank=True, null=True)
-    gender = models.CharField(max_length=10, blank=True, null=True)
+    
+    # Moved default from serializer to model
+    gender = models.CharField(max_length=15, blank=True, null=True, default="Not Specified")
+    
     like = ArrayField(
         models.IntegerField(),
         default=list,
@@ -28,17 +31,23 @@ class Profile(models.Model):
     phone_no = models.CharField(
         max_length=10,
         unique=True,
+        # This validator is automatically used by ModelSerializer
         validators=[RegexValidator(r'^\d{10}$', 'Enter a valid 10-digit phone number')],
         blank=True,
         null=True
     )
-    location = models.CharField(max_length=255, blank=True, null=True)
-    # Split locationCoordinates into latitude and longitude
+    
+    # Moved default from serializer to model
+    location = models.CharField(max_length=255, blank=True, null=True, default="Unknown")
+    
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    about = models.TextField(max_length=1024, blank=True, null=True)
+    
+    # Moved default from serializer to model
+    about = models.TextField(max_length=1024, blank=True, null=True, default="No description provided.")
+    
     age = models.IntegerField(
         blank=True,
         null=True,
@@ -58,16 +67,20 @@ class Profile(models.Model):
         help_text="URL to the user's profile picture."
     )
     pictures = models.JSONField(
+        default=list,  # Changed from null=True to default=list
         blank=True,
-        null=True,
-        help_text="Store additional profile pictures as a JSON object, e.g., {'images': [url1, url2]}."
+        help_text="Store additional profile pictures as a JSON list, e.g., [url1, url2]."
     )
 
     def save(self, *args, **kwargs):
         if not self.name and self.user:
             self.name = self.user.username
-        if self.phone_no and not self.phone_no.isdigit():
-            raise ValueError("Phone number must contain only digits.")
+        
+        # REMOVED: This check is redundant.
+        # The RegexValidator on the field is stronger and handles this.
+        # if self.phone_no and not self.phone_no.isdigit():
+        #     raise ValueError("Phone number must contain only digits.")
+        
         super().save(*args, **kwargs)
 
     def set_location_coordinates(self, latitude, longitude):
@@ -91,7 +104,4 @@ class Profile(models.Model):
         verbose_name_plural = "Profiles"
         indexes = [
             models.Index(fields=['phone_no']),
-            # You can also add indexes for latitude and longitude if needed:
-            # models.Index(fields=['latitude']),
-            # models.Index(fields=['longitude']),
         ]

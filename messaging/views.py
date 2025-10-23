@@ -1,65 +1,67 @@
-from django.http import JsonResponse
-from django.db.models import Q
-from rest_framework.views import APIView
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework import status
-from .models import ChatRoom, Message
-from .serializers import ChatRoomSerializer, MessageSerializer
-from django.contrib.auth.models import User
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
-from user.models import Profile
+from .models import ChatRoom, Message, Profile
+from .serializers import ChatRoomSerializer, MessageSerializer
 
-class ChatRoomListView(APIView):
-    def get(self, request):
-        user_id = request.GET.get('user_id')
-
-        if not user_id:
-            return JsonResponse({'error': 'User ID is required','request' : request.data}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Fetch chat rooms where the user is either participant1 or participant2
-        rooms = ChatRoom.objects.filter(participant1_id=user_id)
-        serializer = ChatRoomSerializer(rooms, many=True)
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def chat_room_list(request):
     
-        return JsonResponse(serializer.data,safe=False)
+    current_profile = request.user.profile
 
-    def post(self, request):
-        participant1_id = request.data.get('participant1')
-        participant2_id = request.data.get('participant2')
+    if request.method == 'GET':
+        rooms = ChatRoom.objects.filter(
+            Q(participant1=current_profile) | Q(participant2=current_profile)
+        ).select_related('participant1', 'participant2')
+        
+        serializer = ChatRoomSerializer(rooms, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-        if not participant1_id or not participant2_id:
-            return JsonResponse({'error': 'Both participants are required','request' : request.POST}, status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'POST':
+        participant2_id = request.data.get('participant2_id')
+        if not participant2_id:
+            return Response(
+                {'error': 'participant2_id is required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if current_profile.id == participant2_id:
+            return Response(
+                {'error': 'Cannot create a chat room with yourself'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        participant1 = get_object_or_404(Profile, id=participant1_id)
         participant2 = get_object_or_404(Profile, id=participant2_id)
+        
+        p1 = min(current_profile, participant2, key=lambda p: p.id)
+        p2 = max(current_profile, participant2, key=lambda p: p.id)
 
-        # Ensure consistent ordering of participants
         room, created = ChatRoom.objects.get_or_create(
-            participant1=participant1,
-            participant2=participant2
+            participant1=p1,
+            participant2=p2
         )
-
+        
+        status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
         serializer = ChatRoomSerializer(room)
-        return JsonResponse(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+        return Response(serializer.data, status=status_code)
 
-class SendMessageView(APIView):
-    def post(self, request):
-        sender_id = request.data.get('sender')
-        receiver_id = request.data.get('receiver')
-        message = request.data.get('content')
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def message_list(request, room_id):
+    
+    current_profile = request.user.profile
+    room = get_object_or_404(ChatRoom, id=room_id)
 
-        if not sender_id or not receiver_id or not message:
-            return JsonResponse({'error': 'Missing required fields'}, status=status.HTTP_400_BAD_REQUEST)
-
-        sender = get_object_or_404(User, id=sender_id)
-        receiver = get_object_or_404(User, id=receiver_id)
-
-        # Ensure chat room exists
-        chat_room, _ = ChatRoom.objects.get_or_create(
-            participant1=min(sender, receiver, key=lambda x: x.id),
-            participant2=max(sender, receiver, key=lambda x: x.id)
+    if not (room.participant1 == current_profile or room.participant2 == current_profile):
+        return Response(
+            {'error': 'You are not a participant in this chat room'}, 
+            status=status.HTTP_403_FORBIDDEN
         )
-
-        # Save message
-        msg = Message.objects.create(sender=sender, receiver=receiver, content=message)
-        serializer = MessageSerializer(msg)
-
-        return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
+    
+    messages = Message.objects.filter(chat_room=room)
+    serializer = MessageSerializer(messages, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
