@@ -1,20 +1,24 @@
 # connect_django/asgi.py
 import os
-from django.core.asgi import get_asgi_application
-from channels.routing import ProtocolTypeRouter, URLRouter
-# from channels.auth import AuthMiddlewareStack # Comment out or remove if only using token auth
-from .middleware import TokenAuthMiddleware # Import your middleware
-import messaging.routing # Make sure this points to your chat app's routing
+import django
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'connect_django.settings')
+# Set Django settings BEFORE any imports
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "connect_django.settings")
+django.setup()
 
-django_asgi_app = get_asgi_application()
+from django.core.asgi import get_asgi_application  # noqa: E402
+from channels.routing import ProtocolTypeRouter, URLRouter  # noqa: E402
+from .middleware import TokenAuthMiddleware  # noqa: E402
+import messaging.routing  # noqa: E402
 
-application = ProtocolTypeRouter({
-    "http": django_asgi_app,
-    "websocket": TokenAuthMiddleware( # Wrap the URLRouter
-        URLRouter(
-            messaging.routing.websocket_urlpatterns
-        )
-    ),
-})
+django.setup()
+
+
+application = ProtocolTypeRouter(
+    {
+        "http": get_asgi_application(),
+        "websocket": TokenAuthMiddleware(
+            URLRouter(messaging.routing.websocket_urlpatterns)
+        ),
+    }
+)

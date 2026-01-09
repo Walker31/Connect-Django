@@ -1,7 +1,6 @@
 from pathlib import Path
 from datetime import timedelta
 import environ
-import dj_database_url
 
 # Environment Setup
 env = environ.Env(
@@ -92,7 +91,8 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
+            "hosts": [(env('REDIS_HOST', default='127.0.0.1'), int(env('REDIS_PORT', default='6379')))],
+            "password": env('REDIS_PASSWORD', default=''),
         },
     },
 }
@@ -111,12 +111,18 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-GOOGLE_CLIENT_ID = "722853174837-v2deis0cugj96kkehvoegef7ldkqd3oo.apps.googleusercontent.com"
+GOOGLE_CLIENT_ID = env('GOOGLE_CLIENT_ID', default='')
 
 # Cloudinary Configuration
 CLOUDINARY_CLOUD_NAME = env('CLOUDINARY_CLOUD_NAME', default='')
 CLOUDINARY_API_KEY = env('CLOUDINARY_API_KEY', default='')
 CLOUDINARY_API_SECRET = env('CLOUDINARY_API_SECRET', default='')
+
+# Default Assets
+DEFAULT_PROFILE_PICTURE_URL = env(
+    'DEFAULT_PROFILE_PICTURE_URL',
+    default='https://res.cloudinary.com/default/image/upload/default-profile.png'
+)
 
 STORAGES = {
     "staticfiles": {
@@ -129,7 +135,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 # Timezone and Language
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Asia/Kolkata'
+TIME_ZONE = env('TIME_ZONE', default='Asia/Kolkata')
 USE_I18N = True
 USE_TZ = True
 

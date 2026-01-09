@@ -30,7 +30,6 @@ db.sqlite3
 *.retry
 
 # Media and static files
-/media/
 *.media/
 staticfiles/
 static/

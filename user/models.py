@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
 from django.contrib.postgres.fields import ArrayField
 from django.utils.timezone import now
+from django.conf import settings
 
 class Profile(models.Model):
     # No 'id' field needed, Django adds 'id = AutoField(primary_key=True)' by default
@@ -63,7 +64,7 @@ class Profile(models.Model):
         max_length=2048,
         blank=True,
         null=True,
-        default="https://example.com/default-profile-picture.png",
+        default=lambda: settings.DEFAULT_PROFILE_PICTURE_URL,
         help_text="URL to the user's profile picture."
     )
     pictures = models.JSONField(
