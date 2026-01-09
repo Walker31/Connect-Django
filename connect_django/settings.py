@@ -28,12 +28,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
-    'storages',
     'user',
     'post',
     'matches',
     'spotify',
-    'azureservice',
+    'media',
     'channels',
     'messaging',
 ]
@@ -72,26 +71,20 @@ TEMPLATES = [
 ]
 
 # Databases
+DB_ENV = env('DATABASE_ENV', default='local')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('LOCAL_DB_NAME'),
-        'USER': env('LOCAL_DB_USER'),
-        'PASSWORD': env('LOCAL_DB_PASSWORD'),
-        'HOST': env('LOCAL_DB_HOST'),
-        'PORT': env('LOCAL_DB_PORT'),
-    },
-    'aws': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Connect',
-        'USER': 'Walker',
-        'PASSWORD': env('AWS_DB_PASSWORD'),
-        'HOST': '43.204.170.91',
-        'PORT': '5432',
-        'OPTIONS' :{
-            'sslmode' : 'require'
-        }
-    },
+        'NAME': env('CLOUD_DB_NAME') if DB_ENV == 'cloud' else env('LOCAL_DB_NAME'),
+        'USER': env('CLOUD_DB_USER') if DB_ENV == 'cloud' else env('LOCAL_DB_USER'),
+        'PASSWORD': env('CLOUD_DB_PASSWORD') if DB_ENV == 'cloud' else env('LOCAL_DB_PASSWORD'),
+        'HOST': env('CLOUD_DB_HOST') if DB_ENV == 'cloud' else env('LOCAL_DB_HOST'),
+        'PORT': env('CLOUD_DB_PORT') if DB_ENV == 'cloud' else env('LOCAL_DB_PORT'),
+        'OPTIONS': {
+            'sslmode': 'require'
+        } if DB_ENV == 'cloud' else {}
+    }
 }
 
 # Channel Layers
@@ -119,6 +112,11 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 GOOGLE_CLIENT_ID = "722853174837-v2deis0cugj96kkehvoegef7ldkqd3oo.apps.googleusercontent.com"
+
+# Cloudinary Configuration
+CLOUDINARY_CLOUD_NAME = env('CLOUDINARY_CLOUD_NAME', default='')
+CLOUDINARY_API_KEY = env('CLOUDINARY_API_KEY', default='')
+CLOUDINARY_API_SECRET = env('CLOUDINARY_API_SECRET', default='')
 
 STORAGES = {
     "staticfiles": {

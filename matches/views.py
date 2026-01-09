@@ -1,4 +1,3 @@
-from django.http import JsonResponse
 from rest_framework.response import Response 
 from rest_framework import status
 import math
@@ -6,8 +5,6 @@ from rest_framework.decorators import api_view, permission_classes # Import perm
 from rest_framework.permissions import IsAuthenticated             # Import IsAuthenticated
 from user.models import Profile
 import traceback
-from django.db.models import Q # For complex lookups
-import decimal # For high-precision math
 import decimal
 
 # The haversine function is good. No changes needed.
@@ -111,7 +108,7 @@ def updateList(request):
             }
             return Response(response_data, status=status.HTTP_200_OK)
 
-    except Exception as e:
+    except Exception as e:  # noqa: F841
         traceback.print_exc() # For better logging
         return Response(
             {"status": "error", "message": "An internal server error occurred"}, 
