@@ -64,7 +64,7 @@ class Profile(models.Model):
         max_length=2048,
         blank=True,
         null=True,
-        default=lambda: settings.DEFAULT_PROFILE_PICTURE_URL,
+        default=settings.DEFAULT_PROFILE_PICTURE_URL,
         help_text="URL to the user's profile picture."
     )
     pictures = models.JSONField(
